@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch:
 
 concurrency:
@@ -31,9 +32,10 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Criar arquivo .env de producao para o build
+      - name: Criar arquivo .env para o build
         run: |
-          cat > .env << 'EOF'
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            cat > .env << 'EOF'
           APP_NAME="ConquistaServ"
           VERSION=1.0.0
           PORT=8080
@@ -41,6 +43,16 @@ jobs:
           BASE_URL=https://servconquista.brainstormlabs.online/
           API_BASE_URL=https://servconquista.brainstormlabs.online/api/
           EOF
+          else
+            cat > .env << 'EOF'
+          APP_NAME="ConquistaServ (Homolog)"
+          VERSION=1.0.0
+          PORT=8080
+          PROTOCOL=https
+          BASE_URL=https://hml-servconquista.brainstormlabs.online/
+          API_BASE_URL=https://hml-servconquista.brainstormlabs.online/api/
+          EOF
+          fi
 
       - name: Instalar Quasar CLI globalmente
         run: npm install -g @quasar/cli
@@ -69,8 +81,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=main
-            type=raw,value=latest
+            type=raw,value=main,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=develop,enable=${{ github.ref_name == 'develop' }}
             type=sha
 
       - name: Build and push Docker image
@@ -89,12 +102,17 @@ jobs:
           username: ${{ secrets.ORACLE_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
+            set -e
+
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            mkdir -p /srv/stacks/conquistaserv
-            cd /srv/stacks/conquistaserv
-            
-            echo 'name: conquistaserv
+
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              STACK_DIR="/srv/stacks/conquistaserv"
+              mkdir -p "$STACK_DIR"
+              cd "$STACK_DIR"
+
+              cat > docker-compose.yml << 'EOF'
+            name: conquistaserv
             services:
               backend:
                 image: ghcr.io/blimabru/conquistaserv-backend:main
@@ -103,6 +121,7 @@ jobs:
                 volumes:
                   - /etc/localtime:/etc/localtime:ro
                   - /etc/timezone:/etc/timezone:ro
+                  - ./uploads:/app/uploads
                 environment:
                   - TZ=America/Bahia
                   - NODE_ENV=production
@@ -112,8 +131,15 @@ jobs:
                   - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
                   - REFRESH_TOKEN_EXPIRATION=604800s
                   - HTTP_PORT=3006
-                  - APP_HOSTNAME=conquistaserv.brainstormlabs.online
+                  - APP_HOSTNAME=servconquista.brainstormlabs.online
                   - APP_NAME=conquistaserv-backend
+                  - OPENAI_API_KEY=${OPENAI_API_KEY}
+                  - AI_MODEL_NAME=${AI_MODEL_NAME}
+                  - AI_TEMPERATURE=${AI_TEMPERATURE}
+                  - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
+                  - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
+                  - AI_DOCS_PATH=${AI_DOCS_PATH}
+                  - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
                 networks:
                   - global-network
                 logging:
@@ -141,8 +167,76 @@ jobs:
 
             networks:
               global-network:
-                external: true' | sed 's/^            //' > docker-compose.yml
-            
+                external: true
+            EOF
+              sed -i 's/^[ \t]*//' docker-compose.yml
+
+            elif [ "${{ github.ref_name }}" = "develop" ]; then
+              STACK_DIR="/srv/stacks/conquistaserv-hml"
+              mkdir -p "$STACK_DIR"
+              cd "$STACK_DIR"
+
+              cat > docker-compose.yml << 'EOF'
+            name: conquistaserv-hml
+            services:
+              backend:
+                image: ghcr.io/blimabru/conquistaserv-backend:develop
+                container_name: conquistaserv_hml_backend
+                restart: unless-stopped
+                volumes:
+                  - /etc/localtime:/etc/localtime:ro
+                  - /etc/timezone:/etc/timezone:ro
+                  - ./uploads:/app/uploads
+                environment:
+                  - TZ=America/Bahia
+                  - NODE_ENV=production
+                  - DATABASE_URL=${DATABASE_URL}
+                  - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+                  - ACCESS_TOKEN_EXPIRATION=86400s
+                  - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+                  - REFRESH_TOKEN_EXPIRATION=604800s
+                  - HTTP_PORT=3006
+                  - APP_HOSTNAME=hml-servconquista.brainstormlabs.online
+                  - APP_NAME=conquistaserv-backend-hml
+                  - OPENAI_API_KEY=${OPENAI_API_KEY}
+                  - AI_MODEL_NAME=${AI_MODEL_NAME}
+                  - AI_TEMPERATURE=${AI_TEMPERATURE}
+                  - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
+                  - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
+                  - AI_DOCS_PATH=${AI_DOCS_PATH}
+                  - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
+                networks:
+                  - global-network
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+
+              frontend:
+                image: ghcr.io/blimabru/conquistaserv-frontend:develop
+                container_name: conquistaserv_hml_frontend
+                restart: unless-stopped
+                volumes:
+                  - /etc/localtime:/etc/localtime:ro
+                  - /etc/timezone:/etc/timezone:ro
+                environment:
+                  - TZ=America/Bahia
+                networks:
+                  - global-network
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+
+            networks:
+              global-network:
+                external: true
+            EOF
+              sed -i 's/^[ \t]*//' docker-compose.yml
+            fi
+
             docker compose pull frontend
             docker compose up -d frontend
             docker image prune -af
