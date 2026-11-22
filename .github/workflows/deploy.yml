@@ -107,7 +107,7 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             if [ "${{ github.ref_name }}" = "main" ]; then
-              STACK_DIR="/srv/stacks/conquistaserv"
+              STACK_DIR="/srv/stacks/conquistaserv/conquistaserv-prod"
               mkdir -p "$STACK_DIR"
               cd "$STACK_DIR"
 
@@ -172,7 +172,7 @@ jobs:
               sed -i 's/^            //' docker-compose.yml
 
             elif [ "${{ github.ref_name }}" = "develop" ]; then
-              STACK_DIR="/srv/stacks/conquistaserv-hml"
+              STACK_DIR="/srv/stacks/conquistaserv/conquistaserv-hml"
               mkdir -p "$STACK_DIR"
               cd "$STACK_DIR"
 
