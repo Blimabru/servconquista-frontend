@@ -9,6 +9,7 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers');
+const envParsed = require('dotenv').config().parsed || {};
 
 module.exports = configure(function (ctx) {
   return {
@@ -50,7 +51,10 @@ module.exports = configure(function (ctx) {
       },
 
       vueRouterMode: 'history', // available values: 'hash', 'history'
-      env: require('dotenv').config().parsed || {},
+      env: envParsed,
+      htmlVariables: {
+        productName: process.env.APP_NAME || envParsed.APP_NAME || 'ServConquista',
+      },
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,

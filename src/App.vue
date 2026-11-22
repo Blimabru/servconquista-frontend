@@ -9,6 +9,9 @@ import { useAuthStore } from 'src/stores/authStore';
 
 const authStore = useAuthStore();
 onMounted(() => {
+  if (process.env.APP_NAME) {
+    document.title = process.env.APP_NAME;
+  }
   authStore.initSystem();
   const token = authStore.token || window.sessionStorage.getItem('token');
 

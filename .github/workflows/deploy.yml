@@ -36,7 +36,7 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "main" ]; then
             cat > .env << 'EOF'
-          APP_NAME="ConquistaServ"
+          APP_NAME="ServConquista"
           VERSION=1.0.0
           PORT=8080
           PROTOCOL=https
@@ -45,7 +45,7 @@ jobs:
           EOF
           else
             cat > .env << 'EOF'
-          APP_NAME="ConquistaServ (Homolog)"
+          APP_NAME="ServConquista [HML]"
           VERSION=1.0.0
           PORT=8080
           PROTOCOL=https
