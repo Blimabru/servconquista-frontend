@@ -112,64 +112,63 @@ jobs:
               cd "$STACK_DIR"
 
               cat > docker-compose.yml << 'EOF'
-            name: conquistaserv
-            services:
-              backend:
-                image: ghcr.io/blimabru/conquistaserv-backend:main
-                container_name: conquistaserv_backend
-                restart: unless-stopped
-                volumes:
-                  - /etc/localtime:/etc/localtime:ro
-                  - /etc/timezone:/etc/timezone:ro
-                  - ./uploads:/app/uploads
-                environment:
-                  - TZ=America/Bahia
-                  - NODE_ENV=production
-                  - DATABASE_URL=${DATABASE_URL}
-                  - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
-                  - ACCESS_TOKEN_EXPIRATION=86400s
-                  - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
-                  - REFRESH_TOKEN_EXPIRATION=604800s
-                  - HTTP_PORT=3006
-                  - APP_HOSTNAME=servconquista.brainstormlabs.online
-                  - APP_NAME=conquistaserv-backend
-                  - OPENAI_API_KEY=${OPENAI_API_KEY}
-                  - AI_MODEL_NAME=${AI_MODEL_NAME}
-                  - AI_TEMPERATURE=${AI_TEMPERATURE}
-                  - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
-                  - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
-                  - AI_DOCS_PATH=${AI_DOCS_PATH}
-                  - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
-                networks:
-                  - global-network
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
+name: conquistaserv
+services:
+  backend:
+    image: ghcr.io/blimabru/conquistaserv-backend:main
+    container_name: conquistaserv_backend
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./uploads:/app/uploads
+    environment:
+      - TZ=America/Bahia
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - ACCESS_TOKEN_EXPIRATION=86400s
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRATION=604800s
+      - HTTP_PORT=3006
+      - APP_HOSTNAME=servconquista.brainstormlabs.online
+      - APP_NAME=conquistaserv-backend
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AI_MODEL_NAME=${AI_MODEL_NAME}
+      - AI_TEMPERATURE=${AI_TEMPERATURE}
+      - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
+      - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
+      - AI_DOCS_PATH=${AI_DOCS_PATH}
+      - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
+    networks:
+      - global-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-              frontend:
-                image: ghcr.io/blimabru/conquistaserv-frontend:main
-                container_name: conquistaserv_frontend
-                restart: unless-stopped
-                volumes:
-                  - /etc/localtime:/etc/localtime:ro
-                  - /etc/timezone:/etc/timezone:ro
-                environment:
-                  - TZ=America/Bahia
-                networks:
-                  - global-network
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
+  frontend:
+    image: ghcr.io/blimabru/conquistaserv-frontend:main
+    container_name: conquistaserv_frontend
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - TZ=America/Bahia
+    networks:
+      - global-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-            networks:
-              global-network:
-                external: true
-            EOF
-              sed -i 's/^[ \t]*//' docker-compose.yml
+networks:
+  global-network:
+    external: true
+EOF
 
             elif [ "${{ github.ref_name }}" = "develop" ]; then
               STACK_DIR="/srv/stacks/conquistaserv-hml"
@@ -177,64 +176,63 @@ jobs:
               cd "$STACK_DIR"
 
               cat > docker-compose.yml << 'EOF'
-            name: conquistaserv-hml
-            services:
-              backend:
-                image: ghcr.io/blimabru/conquistaserv-backend:develop
-                container_name: conquistaserv_hml_backend
-                restart: unless-stopped
-                volumes:
-                  - /etc/localtime:/etc/localtime:ro
-                  - /etc/timezone:/etc/timezone:ro
-                  - ./uploads:/app/uploads
-                environment:
-                  - TZ=America/Bahia
-                  - NODE_ENV=production
-                  - DATABASE_URL=${DATABASE_URL}
-                  - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
-                  - ACCESS_TOKEN_EXPIRATION=86400s
-                  - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
-                  - REFRESH_TOKEN_EXPIRATION=604800s
-                  - HTTP_PORT=3006
-                  - APP_HOSTNAME=hml-servconquista.brainstormlabs.online
-                  - APP_NAME=conquistaserv-backend-hml
-                  - OPENAI_API_KEY=${OPENAI_API_KEY}
-                  - AI_MODEL_NAME=${AI_MODEL_NAME}
-                  - AI_TEMPERATURE=${AI_TEMPERATURE}
-                  - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
-                  - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
-                  - AI_DOCS_PATH=${AI_DOCS_PATH}
-                  - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
-                networks:
-                  - global-network
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
+name: conquistaserv-hml
+services:
+  backend:
+    image: ghcr.io/blimabru/conquistaserv-backend:develop
+    container_name: conquistaserv_hml_backend
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./uploads:/app/uploads
+    environment:
+      - TZ=America/Bahia
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - ACCESS_TOKEN_EXPIRATION=86400s
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - REFRESH_TOKEN_EXPIRATION=604800s
+      - HTTP_PORT=3006
+      - APP_HOSTNAME=hml-servconquista.brainstormlabs.online
+      - APP_NAME=conquistaserv-backend-hml
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AI_MODEL_NAME=${AI_MODEL_NAME}
+      - AI_TEMPERATURE=${AI_TEMPERATURE}
+      - AI_CHUNK_SIZE=${AI_CHUNK_SIZE}
+      - AI_CHUNK_OVERLAP=${AI_CHUNK_OVERLAP}
+      - AI_DOCS_PATH=${AI_DOCS_PATH}
+      - AI_SYSTEM_PROMPT_PATH=${AI_SYSTEM_PROMPT_PATH}
+    networks:
+      - global-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-              frontend:
-                image: ghcr.io/blimabru/conquistaserv-frontend:develop
-                container_name: conquistaserv_hml_frontend
-                restart: unless-stopped
-                volumes:
-                  - /etc/localtime:/etc/localtime:ro
-                  - /etc/timezone:/etc/timezone:ro
-                environment:
-                  - TZ=America/Bahia
-                networks:
-                  - global-network
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
+  frontend:
+    image: ghcr.io/blimabru/conquistaserv-frontend:develop
+    container_name: conquistaserv_hml_frontend
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - TZ=America/Bahia
+    networks:
+      - global-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-            networks:
-              global-network:
-                external: true
-            EOF
-              sed -i 's/^[ \t]*//' docker-compose.yml
+networks:
+  global-network:
+    external: true
+EOF
             fi
 
             docker compose pull frontend
